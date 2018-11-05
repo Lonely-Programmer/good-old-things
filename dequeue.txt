@@ -1,0 +1,1408 @@
+​​//deque.hpp内容
+
+​#ifndef SJTU_DEQUE_HPP
+
+#define SJTU_DEQUE_HPP
+
+
+#include "exceptions.hpp"
+
+
+#include <cstddef>
+
+#include <iostream>
+
+#include <cstdio>
+
+
+namespace sjtu {
+
+
+template <class T>
+
+struct Node
+
+    {
+
+        T *data;
+
+        Node<T> *next;
+
+        Node<T> *prev;
+
+        Node<T>() : data(NULL) {next=prev=NULL;}
+
+        Node<T>(T d,Node<T> *n=NULL,Node<T> *p=NULL)
+
+{
+
+data=new T(d); next = n; prev = p;
+
+}
+
+~Node<T>() {delete data;}
+
+    };
+
+
+template<class T>
+
+class deque {
+
+private:
+
+
+    Node<T> *head;
+
+    Node<T> *tail;
+
+    size_t len;
+
+public:
+
+class const_iterator;
+
+class iterator {
+
+    friend class const_iterator;
+
+    friend class deque;
+
+private:
+
+/**
+
+* TODO add data members
+
+*   just add whatever you want.
+
+*/
+
+        Node<T> *pos;
+
+        deque<T> *place;
+
+
+        iterator(Node<T> *p,deque<T> *q) {pos=p; place=q;}
+
+
+public:
+
+/**
+
+* return a new iterator which pointer n-next elements
+
+*   even if there are not enough elements, the behaviour is **undefined**.
+
+* as well as operator-
+
+*/
+
+        iterator() {pos=NULL; place=NULL;}
+
+
+iterator operator+(const int &n) const {
+
+//TODO
+
+            int i;
+
+            iterator tmp(pos,place);
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+   tmp.pos=tmp.pos->next;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+tmp.pos = tmp.pos->prev;
+
+}
+
+            return tmp;
+
+}
+
+iterator operator-(const int &n) const {
+
+//TODO
+
+int i;
+
+            iterator tmp(pos,place);
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+tmp.pos=tmp.pos->prev;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+tmp.pos = tmp.pos->next;
+
+}
+
+            return tmp;
+
+}
+
+// return th distance between two iterator,
+
+// if these two iterators points to different vectors, throw invaild_iterator.
+
+int operator-(const iterator &rhs) const {
+
+//TODO
+
+int x=0,y=0;
+
+Node<T> *p=pos,*q=rhs.pos;
+
+if(place!=rhs.place) throw invalid_iterator();
+
+while(p->prev)
+
+{
+
+   p=p->prev;
+
+   x++;
+
+}
+
+while(q->prev)
+
+{
+
+   q=q->prev;
+
+   y++;
+
+}
+
+if(p!=q) throw invalid_iterator();
+
+return x-y;
+
+}
+
+iterator operator+=(const int &n) {
+
+//TODO
+
+int i;
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+   pos=pos->next;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+pos = pos->prev;
+
+}
+
+            return *this;
+
+}
+
+iterator operator-=(const int &n) {
+
+//TODO
+
+int i;
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+   pos=pos->prev;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+pos = pos->next;
+
+}
+
+            return *this;
+
+}
+
+/**
+
+* TODO iter++
+
+*/
+
+iterator operator++(int) {
+
+            iterator tmp(pos,place);
+
+            pos=pos->next;
+
+            return tmp;
+
+        }
+
+/**
+
+* TODO ++iter
+
+*/
+
+iterator& operator++() {
+
+            pos=pos->next;
+
+            return *this;
+
+        }
+
+/**
+
+* TODO iter--
+
+*/
+
+iterator operator--(int) {
+
+   iterator tmp(pos,place);
+
+            pos=pos->prev;
+
+            return tmp;
+
+}
+
+/**
+
+* TODO --iter
+
+*/
+
+iterator& operator--() {
+
+   pos=pos->prev;
+
+            return *this;
+
+}
+
+/**
+
+* TODO *it
+
+*/
+
+T& operator*() const {
+
+if(pos==NULL || pos->next==NULL || pos->prev==NULL) throw invalid_iterator();
+
+   return *(pos->data);
+
+}
+
+/**
+
+* TODO it->field
+
+*/
+
+T* operator->() const {
+
+if (pos == NULL || pos->next == NULL || pos->prev == NULL) throw invalid_iterator();
+
+            return pos->data;
+
+}
+
+/**
+
+* a operator to check whether two iterators are same (pointing to the same memory).
+
+*/
+
+bool operator==(const iterator &rhs) const {return pos==rhs.pos;}
+
+bool operator==(const const_iterator &rhs) const {return pos==rhs.pos;}
+
+/**
+
+* some other operator for iterator.
+
+*/
+
+bool operator!=(const iterator &rhs) const {return pos!=rhs.pos;}
+
+bool operator!=(const const_iterator &rhs) const {return pos!=rhs.pos;}
+
+};
+
+class const_iterator {
+
+// it should has similar member method as iterator.
+
+//  and it should be able to construct from an iterator.
+
+friend class iterator;
+
+friend class deque;
+
+    private:
+
+        // data members.
+
+        const Node<T> *pos;
+
+        const deque<T> *place;
+
+
+        const_iterator(const Node<T> *p,const deque<T> *q) {pos=p; place=q;}
+
+
+    public:
+
+        const_iterator() {
+
+            // TODO
+
+            pos=NULL;
+
+            place=NULL;
+
+        }
+
+        const_iterator(const const_iterator &other) {
+
+            // TODO
+
+            pos=other.pos;
+
+            place=other.place;
+
+        }
+
+        const_iterator(const iterator &other) {
+
+            // TODO
+
+            pos=other.pos;
+
+            place=other.place;
+
+        }
+
+        // And other methods in iterator.
+
+        // And other methods in iterator.
+
+        // And other methods in iterator.
+
+        const_iterator operator+(const int &n) const {
+
+            //TODO
+
+            int i;
+
+            const_iterator tmp(pos,place);
+
+
+            if(n>=0)
+
+                for(i=0;i<n;i++)
+
+                {
+
+                    tmp.pos=tmp.pos->next;
+
+                }
+
+            else
+
+                for (i = 0; i < -n; i++)
+
+                {
+
+                    tmp.pos = tmp.pos->prev;
+
+                }
+
+            return tmp;
+
+        }
+
+const_iterator operator-(const int &n) const {
+
+//TODO
+
+int i;
+
+            const_iterator tmp(pos,place);
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+tmp.pos=tmp.pos->prev;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+tmp.pos = tmp.pos->next;
+
+}
+
+            return tmp;
+
+}
+
+// return th distance between two iterator,
+
+// if these two iterators points to different vectors, throw invaild_iterator.
+
+int operator-(const const_iterator &rhs) const {
+
+//TODO
+
+int x=0,y=0;
+
+const Node<T> *p=pos,*q=rhs.pos;
+
+if(place!=rhs.place) throw invalid_iterator();
+
+while(p->prev)
+
+{
+
+   p=p->prev;
+
+   x++;
+
+}
+
+while(q->prev)
+
+{
+
+   q=q->prev;
+
+   y++;
+
+}
+
+if(p!=q) throw invalid_iterator();
+
+return x-y;
+
+}
+
+
+const_iterator operator+=(const int &n) {
+
+//TODO
+
+int i;
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+   pos=pos->next;
+
+   //if(pos==NULL) throw index_out_of_bound;
+
+}
+
+//if(pos==tail) throw index_out_of_bound;
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+pos = pos->prev;
+
+}
+
+            return *this;
+
+}
+
+const_iterator operator-=(const int &n) {
+
+//TODO
+
+int i;
+
+
+if(n>=0)
+
+for(i=0;i<n;i++)
+
+{
+
+   pos=pos->prev;
+
+   //if(pos==NULL) throw index_out_of_bound;
+
+}
+
+else
+
+for (i = 0; i < -n; i++)
+
+{
+
+pos = pos->next;
+
+}
+
+            //if(pos==head) throw index_out_of_bound;
+
+            return *this;
+
+}
+
+/**
+
+* TODO iter++
+
+*/
+
+const_iterator operator++(int) {
+
+            const_iterator tmp(pos,place);
+
+            pos=pos->next;
+
+            return tmp;
+
+        }
+
+/**
+
+* TODO ++iter
+
+*/
+
+const_iterator& operator++() {
+
+            pos=pos->next;
+
+            return *this;
+
+        }
+
+/**
+
+* TODO iter--
+
+*/
+
+const_iterator operator--(int) {
+
+   const_iterator tmp(pos,place);
+
+            pos=pos->prev;
+
+            return tmp;
+
+}
+
+/**
+
+* TODO --iter
+
+*/
+
+const_iterator& operator--() {
+
+   pos=pos->prev;
+
+            return *this;
+
+}
+
+/**
+
+* TODO *it
+
+*/
+
+T const& operator*() const {
+
+if(pos==NULL || pos->next==NULL || pos->prev==NULL) throw invalid_iterator();
+
+   return *(pos->data);
+
+}
+
+/**
+
+* TODO it->field
+
+*/
+
+T const* operator->() const {
+
+if (pos == NULL || pos->next == NULL || pos->prev == NULL) throw invalid_iterator();
+
+            return pos->data;
+
+}
+
+
+        bool operator==(const iterator &rhs) const {return pos==rhs.pos;}
+
+        bool operator==(const const_iterator &rhs) const {return pos==rhs.pos;}
+
+        bool operator!=(const iterator &rhs) const {return pos!=rhs.pos;}
+
+        bool operator!=(const const_iterator &rhs) const {return pos!=rhs.pos;}
+
+};
+
+/**
+
+* TODO Constructors
+
+*/
+
+deque() {
+
+        head=new Node<T>;
+
+        tail=new Node<T>;
+
+        head->next=tail;
+
+        tail->prev=head;
+
+        len=0;
+
+}
+
+deque(const deque &other) {
+
+   head=new Node<T>;
+
+   Node<T> *p,*q;
+
+p = head; q = other.head->next;
+
+   while(q)
+
+   {
+
+       if(q->next)
+
+                p->next=new Node<T>(*(q->data),NULL,p);
+
+            else
+
+            {
+
+                p->next=new Node<T>;
+
+                p->next->prev=p;
+
+            }
+
+       p=p->next;
+
+       q=q->next;
+
+   }
+
+   tail=p;
+
+   len=other.len;
+
+    }
+
+/**
+
+* TODO Deconstructor
+
+*/
+
+~deque() {
+
+   Node<T> *p=head->next,*q=head;
+
+   while(p)
+
+   {
+
+       delete q;
+
+       q=p;
+
+       p=p->next;
+
+   }
+
+   delete q;
+
+}
+
+/**
+
+* TODO assignment operator
+
+*/
+
+deque &operator=(const deque &other) {
+
+
+   if(&other==this) return *this;
+
+
+   Node<T> *p=head->next,*q=head;
+
+   while(p)
+
+   {
+
+       delete q;
+
+       q=p;
+
+       p=p->next;
+
+   }
+
+   delete q;
+
+
+
+   head=new Node<T>;
+
+   p=head; q=other.head->next;
+
+
+   while(q)
+
+   {
+
+       if(q->next)
+
+            {
+
+                 p->next=new Node<T>(*(q->data),NULL,p);
+
+            }
+
+            else
+
+            {
+
+                p->next=new Node<T>;
+
+                p->next->prev=p;
+
+            }
+
+       p=p->next;
+
+       q=q->next;
+
+   }
+
+   tail=p;
+
+   len=other.len;
+
+
+   return *this;
+
+}
+
+/**
+
+* access specified element with bounds checking
+
+* throw index_out_of_bound if out of bound.
+
+*/
+
+T & at(const size_t &pos) {
+
+   size_t i;
+
+   Node<T> *p=head->next;
+
+
+if(pos<0) throw index_out_of_bound();
+
+   for(i=0;i<pos;i++)
+
+   {
+
+       if(p==tail) throw index_out_of_bound();
+
+       p=p->next;
+
+   }
+
+   if(p==tail) throw index_out_of_bound();
+
+   return *(p->data);
+
+}
+
+const T & at(const size_t &pos) const {
+
+   size_t i;
+
+   Node<T> *p=head->next;
+
+
+if (pos<0) throw index_out_of_bound();
+
+   for(i=0;i<pos;i++)
+
+   {
+
+       if(p==tail) throw index_out_of_bound();
+
+       p=p->next;
+
+   }
+
+   if(p==tail) throw index_out_of_bound();
+
+   return *(p->data);
+
+}
+
+T & operator[](const size_t &pos) {
+
+   size_t i;
+
+   Node<T> *p=head->next;
+
+
+if (pos<0) throw index_out_of_bound();
+
+for (i = 0; i<pos; i++)
+
+{
+
+if (p == tail) throw index_out_of_bound();
+
+p = p->next;
+
+}
+
+if (p == tail) throw index_out_of_bound();
+
+return *(p->data);
+
+}
+
+const T & operator[](const size_t &pos) const {
+
+size_t i;
+
+Node<T> *p = head->next;
+
+
+if (pos<0) throw index_out_of_bound();
+
+for (i = 0; i<pos; i++)
+
+{
+
+if (p == tail) throw index_out_of_bound();
+
+p = p->next;
+
+}
+
+if (p == tail) throw index_out_of_bound();
+
+return *(p->data);
+
+}
+
+/**
+
+* access the first element
+
+* throw container_is_empty when the container is empty.
+
+*/
+
+const T & front() const {
+
+   if(len==0) throw container_is_empty();
+
+   return *(head->next->data);
+
+}
+
+/**
+
+* access the last element
+
+* throw container_is_empty when the container is empty.
+
+*/
+
+const T & back() const {
+
+   if(len==0) throw container_is_empty();
+
+   return *(tail->prev->data);
+
+}
+
+/**
+
+* returns an iterator to the beginning.
+
+*/
+
+iterator begin() {
+
+   iterator tmp(head->next,this);
+
+        return tmp;
+
+}
+
+const_iterator cbegin() const {
+
+   const_iterator tmp(head->next,this);
+
+   return tmp;
+
+}
+
+/**
+
+* returns an iterator to the end.
+
+*/
+
+iterator end() {
+
+   iterator tmp(tail,this);
+
+   return tmp;
+
+}
+
+const_iterator cend() const {
+
+   const_iterator tmp(tail,this);
+
+   return tmp;
+
+}
+
+/**
+
+* checks whether the container is empty.
+
+*/
+
+bool empty() const {return len==0;}
+
+/**
+
+* returns the number of elements
+
+*/
+
+size_t size() const {return len;}
+
+/**
+
+* clears the contents
+
+*/
+
+void clear() {
+
+   if(head->next->next==NULL) return;
+
+   Node<T> *p=head->next,*q=head;
+
+   while(p)
+
+   {
+
+       delete q;
+
+       q=p;
+
+       p=p->next;
+
+   }
+
+   delete q;
+
+
+   head=new Node<T>;
+
+   tail=new Node<T>;
+
+   head->next=tail;
+
+   tail->prev=head;
+
+   len=0;
+
+}
+
+/**
+
+* inserts elements at the specified locat on in the container.
+
+* inserts value before pos
+
+* returns an iterator pointing to the inserted value
+
+*     throw if the iterator is invalid or it point to a wrong place.
+
+*/
+
+iterator insert(iterator pos, const T &value) {
+
+   Node<T> *p=pos.pos;
+
+   if(p==head || p==NULL) throw invalid_iterator();
+
+if(pos.place!=this) throw invalid_iterator();
+
+        Node<T> *q=new Node<T>(value,p,p->prev);
+
+        p->prev->next=q;
+
+        p->prev=q;
+
+        len++;
+
+        iterator tmp(q,this);
+
+        return tmp;
+
+}
+
+/**
+
+* removes specified element at pos.
+
+* removes the element at pos.
+
+* returns an iterator pointing to the following element, if pos pointing to the last element, end() will be returned.
+
+* throw if the container is empty, the iterator is invalid or it points to a wrong place.
+
+*/
+
+iterator erase(iterator pos) {
+
+   if(len==0) throw container_is_empty();
+
+if(pos.place!=this) throw invalid_iterator();
+
+        Node<T> *p=pos.pos;
+
+        if(p==head || p==tail || p==NULL) throw invalid_iterator();
+
+        Node<T> *q=p->next;
+
+        q->prev=p->prev;
+
+        p->prev->next=q;
+
+        delete p;
+
+        len--;
+
+        if(q==tail) return end();
+
+        iterator tmp(q,this);
+
+        return tmp;
+
+}
+
+/**
+
+* adds an element to the end
+
+*/
+
+void push_back(const T &value) {
+
+   Node<T> *p=tail->prev;
+
+   tail->prev=new Node<T>(value,tail,p);
+
+   p->next=tail->prev;
+
+   len++;
+
+}
+
+/**
+
+* removes the last element
+
+*     throw when the container is empty.
+
+*/
+
+void pop_back() {
+
+   if(len==0) throw container_is_empty();
+
+   Node<T> *p=tail->prev;
+
+   tail->prev=p->prev;
+
+   p->prev->next=tail;
+
+   delete p;
+
+   len--;
+
+}
+
+/**
+
+* inserts an element to the beginning.
+
+*/
+
+void push_front(const T &value) {
+
+   Node<T> *p=head->next;
+
+   head->next=new Node<T>(value,p,head);
+
+   p->prev=head->next;
+
+   len++;
+
+}
+
+/**
+
+* removes the first element.
+
+*     throw when the container is empty.
+
+*/
+
+void pop_front() {
+
+   if(len==0) throw container_is_empty();
+
+   Node<T> *p=head->next;
+
+   head->next=p->next;
+
+   p->next->prev=head;
+
+   delete p;
+
+   len--;
+
+}
+
+};
+
+
+}
+
+#endif
+
+
+//exceptions.hpp内容
+
+#ifndef SJTU_EXCEPTIONS_HPP
+
+#define SJTU_EXCEPTIONS_HPP
+
+
+#include <cstddef>
+
+#include <cstring>
+
+#include <string>
+
+
+namespace sjtu
+
+{
+
+    
+
+    class exception
+
+    {
+
+    protected:
+
+        const std::string variant = "";
+
+        std::string detail = "";
+
+    public:
+
+        exception() {}
+
+        exception(const exception &ec) : variant(ec.variant), detail(ec.detail){}
+
+        virtual std::string what()
+
+        {
+
+            return variant + " " + detail;
+
+        }
+
+    };
+
+    class index_out_of_bound : public exception
+
+    {
+
+    protected:
+
+        const std::string variant;
+
+    public:
+
+        index_out_of_bound(const std::string &ec = std :: string("")) : variant(ec) { detail = "error : index out of bound.";}
+
+        
+
+        virtual std::string what() { return variant + " " + detail;}
+
+    };
+
+    
+
+    class runtime_error : public exception
+
+    {
+
+    protected:
+
+        const std::string variant;
+
+    public:
+
+        runtime_error(const std::string &ec = std :: string("")) : variant(ec) { detail = "error : runtime error.";}
+
+        
+
+        virtual std::string what() { return variant + " " + detail;}
+
+    };
+
+    
+
+    class invalid_iterator : public exception
+
+    {
+
+    protected:
+
+        const std::string variant;
+
+    public:
+
+        invalid_iterator(const std::string &ec = std :: string("")) : variant(ec) { detail = "error : invalid iterator.";}
+
+        
+
+        virtual std::string what() { return variant + " " + detail;}
+
+    };
+
+    
+
+    class container_is_empty : public exception
+
+    {
+
+    protected:
+
+        const std::string variant;
+
+    public:
+
+        container_is_empty(const std::string &ec = std :: string("")) : variant(ec) { detail = "error : container is empty.";}
+
+        
+
+        virtual std::string what() { return variant + " " + detail;}
+
+    };
+
+}
+
+
+#endif
+
+
